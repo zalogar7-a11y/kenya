@@ -172,7 +172,7 @@
         
         .word-gap {
             display: inline-block;
-            width: 5rem;
+            width: 8rem;
         }
         
         #hangman-drawing {
@@ -521,8 +521,7 @@
     <!-- Hangman Scene -->
     <div id="hangman-scene" class="scene">
         <div class="hangman-container">
-            <div class="hack-header">TEACHER'S SECRET REVEALED?</div>
-            
+            <div style="font-size: 2.5rem; color: #0f0; margin-bottom: 10px;">TEACHER'S SECRET REVEALED?</div>
             <div id="hangman-drawing"> </div>
             
             <div id="puzzle"></div>
@@ -753,7 +752,7 @@
             const words = secret.toUpperCase().split(' ');
             const displayedWords = words.map(word => {
                 return word.split('').map(char => {
-                    if (char === '.') return '. ';
+                    if (char === '.') return '.&nbsp;&nbsp;';
                     if (guessed.has(char)) return char + ' ';
                     return '_ ';
                 }).join('');
