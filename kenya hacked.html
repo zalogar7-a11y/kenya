@@ -140,6 +140,14 @@
         
         #hangman-scene {
             display: none;
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            z-index: 10;
+            padding: 20px;
         }
         
         .hangman-container {
@@ -428,6 +436,10 @@
         
         .terminal-log.active {
             display: block;
+        }
+        
+        .terminal-log.hidden {
+            display: none;
         }
         
         /* HACK CODE OVERLAY - Shows random code during intro */
@@ -919,12 +931,13 @@
         // ============ SCENE MANAGEMENT ============
         function showScene(n) {
             document.querySelectorAll('.scene').forEach(s => s.style.display = 'none');
+            document.getElementById('hangman-scene').style.display = 'none';
             if (n === 1) document.getElementById('scene1').style.display = 'flex';
             if (n === 2) document.getElementById('scene2').style.display = 'flex';
             if (n === 3) document.getElementById('scene3').style.display = 'flex';
             if (n === 4) {
                 document.getElementById('hangman-scene').style.display = 'flex';
-                terminal.classList.add('hidden');
+                terminalLog.classList.add('hidden');
                 updatePuzzle();
                 createKeyboard();
             }
