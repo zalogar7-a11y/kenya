@@ -64,6 +64,52 @@
             z-index: 10;
             padding: 20px;
         }
+
+        /* HACK OVERLAY FOR SCENE 1 */
+        #hack-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 50;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 40px 20px;
+        }
+        #hack-overlay.active { display: flex !important; }
+        .hack-warning {
+            font-size: clamp(3rem, 10vw, 8rem);
+            color: #f00;
+            text-shadow: 0 0 30px #f00, 0 0 60px #f00;
+            animation: flash-red 0.3s infinite;
+            margin-bottom: 20px;
+            font-weight: bold;
+            text-align: center;
+            line-height: 1.1;
+        }
+        .hack-subwarning {
+            font-size: clamp(2rem, 7vw, 5rem);
+            color: #ff0;
+            text-shadow: 0 0 20px #ff0;
+            animation: flash-yellow 0.5s infinite;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        .hack-lines {
+            font-size: clamp(1.3rem, 4vw, 2.5rem);
+            color: #f00;
+            text-align: center;
+            line-height: 1.5;
+            max-width: 95%;
+        }
+        .hack-line {
+            margin: 10px 0;
+            animation: blink-text 0.2s infinite alternate;
+        }
+        @keyframes flash-red { 0%, 100% { opacity: 1; } 50% { opacity: 0.2; } }
+        @keyframes flash-yellow { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+        @keyframes blink-text { from { opacity: 0.5; } to { opacity: 1; } }
         
         .glitch {
             font-size: 4.8rem;
@@ -252,6 +298,8 @@
         }
         
         #win-scene {
+            overflow-y: auto;
+            min-height: 100vh;
             display: none;
             background: radial-gradient(ellipse at center, #002200 0%, #000 70%);
             flex-direction: column;
@@ -262,10 +310,13 @@
         
         /* Win content - centered, no side panels */
         #win-scene .win-content-wrapper {
+            min-height: 100vh;
+            
+            padding-top: 40px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
+            
             width: 100%;
             max-width: 900px;
             padding: 20px;
@@ -426,9 +477,12 @@
     <canvas id="matrix"></canvas>
     <div class="scanlines"></div>
     
-    <!-- HACK CODE OVERLAY - Shows during intro for realistic hacking effect -->
-    <div class="hack-code-overlay" id="hack-code-overlay"></div>
-    
+    <!-- HACK OVERLAY FOR SCENE 1 - Emergency Alert Style -->
+    <div id="hack-overlay">
+        <div class="hack-warning">⚠️ EMERGENCY ⚠️</div>
+        <div class="hack-subwarning">YOU ARE BEING HACKED!</div>
+        <div class="hack-lines" id="hack-lines"></div>
+    </div>
     <!-- Terminal Log Panel -->
     <div class="terminal-log" id="terminal-log">
         <div style="color:#0ff;margin-bottom:8px;border-bottom:1px solid #0f0;padding-bottom:5px;">
@@ -591,65 +645,47 @@
             }, speed);
         }
         
-        // ============ HACK CODE GENERATOR ============
-        const hackCodeOverlay = document.getElementById('hack-code-overlay');
-        const codeLines = [];
-        const maxCodeLines = 25;
-        
-        function generateRandomCode() {
-            const keywords = ['0x', 'FF', 'A7', '3B', 'C4', 'inject', 'payload', 'decrypt', 'bypass', 'firewall', 
-                          'root', 'access', 'grant', 'denied', 'protocol', 'encrypt', 'AES-256', 'RSA', 
-                          'SHA-512', 'hash', 'salt', 'nonce', 'vector', 'buffer', 'overflow', 'stack', 
-                          'heap', 'malloc', 'free', 'ptr', 'void*', 'int', 'char', 'bool', 'true', 'false',
-                          'if', 'else', 'while', 'for', 'return', 'break', 'continue', 'switch', 'case',
-                          'function', 'var', 'let', 'const', 'async', 'await', 'promise', 'then', 'catch',
-                          'fetch', 'API', 'HTTP', 'HTTPS', 'TCP', 'UDP', 'IP', 'DNS', 'SSL', 'TLS',
-                          'auth', 'login', 'password', 'username', 'session', 'token', 'cookie', 'header',
-                          'POST', 'GET', 'PUT', 'DELETE', 'request', 'response', 'status', 'error', 'warn'];
-            
-            let line = '';
-            const numWords = Math.floor(Math.random() * 8) + 3;
-            for (let j = 0; j < numWords; j++) {
-                if (Math.random() > 0.7) {
-                    line += Math.floor(Math.random() * 9999).toString(16).toUpperCase().padStart(4, '0');
-                } else {
-                    line += keywords[Math.floor(Math.random() * keywords.length)];
-                }
-                if (j < numWords - 1) {
-                    line += Math.random() > 0.5 ? ' ' : ' -> ';
-                }
-            }
-            return line;
-        }
-        
-        function startHackCodeEffect() {
-            hackCodeOverlay.classList.add('active');
-            hackCodeOverlay.innerHTML = '';
-            codeLines.length = 0;
+        // ============ HACK ALERT EFFECT FOR SCENE 1 ============
+        const hackLinesEl = document.getElementById('hack-lines');
+        const hackMessages = [
+            "⚠️ SYSTEM BREACH DETECTED ⚠️",
+            "🔓 FIREWALL DISABLED 🔓",
+            "💀 UNAUTHORIZED ACCESS IN PROGRESS 💀",
+            "🚨 SECURITY PROTOCOLS OVERRIDDEN 🚨",
+            "⚡ ENCRYPTION BYPASSED ⚡",
+            "🔥 DATA EXTRACTION ACTIVE 🔥",
+            "⚠️ CRITICAL VULNERABILITY EXPLOITED ⚠️",
+            "👾 BACKDOOR INSTALLED 👾",
+            "💣 SYSTEM COMPROMISED 💣",
+            "🚫 NO ESCAPE - YOU ARE BEING HACKED 🚫"
+        ];
+
+        let hackInterval;
+        function startHackAlertEffect() {
+            document.getElementById('hack-overlay').classList.add('active');
+            hackLinesEl.innerHTML = '';
             
             // Create initial lines
-            for (let i = 0; i < maxCodeLines; i++) {
+            for (let i = 0; i < 6; i++) {
                 const line = document.createElement('div');
-                line.className = 'code-line';
-                line.textContent = generateRandomCode();
-                hackCodeOverlay.appendChild(line);
-                codeLines.push(line);
+                line.className = 'hack-line';
+                line.textContent = hackMessages[Math.floor(Math.random() * hackMessages.length)];
+                hackLinesEl.appendChild(line);
             }
-            
+
             // Update random lines continuously
-            setInterval(() => {
-                const idx = Math.floor(Math.random() * codeLines.length);
-                codeLines[idx].textContent = generateRandomCode();
-                // Occasionally highlight a line
-                if (Math.random() > 0.8) {
-                    codeLines[idx].style.color = '#ff0';
-                    setTimeout(() => { codeLines[idx].style.color = '#0f0'; }, 100);
-                }
-            }, 50);
+            hackInterval = setInterval(() => {
+                const lines = hackLinesEl.querySelectorAll('.hack-line');
+                const idx = Math.floor(Math.random() * lines.length);
+                lines[idx].textContent = hackMessages[Math.floor(Math.random() * hackMessages.length)];
+                lines[idx].style.color = Math.random() > 0.7 ? '#ff0' : '#f00';
+                setTimeout(() => { lines[idx].style.color = '#f00'; }, 150);
+            }, 200);
         }
-        
-        function stopHackCodeEffect() {
-            hackCodeOverlay.classList.remove('active');
+
+        function stopHackAlertEffect() {
+            document.getElementById('hack-overlay').classList.remove('active');
+            if (hackInterval) clearInterval(hackInterval);
         }
         
         // ============ TERMINAL LOG ============
@@ -853,7 +889,7 @@
             
             // Hide win scene, show start
             document.getElementById('win-scene').style.display = 'none';
-            startHackCodeEffect();
+            startHackAlertEffect();
             startSequence();
         }
         
@@ -878,7 +914,7 @@
             document.body.style.display = 'block';
             
             // Start the hack code effect for realistic hacking look
-            startHackCodeEffect();
+            startHackAlertEffect();
             
             addLog('SYSTEM: Initializing hack sequence...', 'info');
             
@@ -892,7 +928,7 @@
                     addLog('ACCESSING: Faculty confidential files...', 'info');
                     
                     // Stop hack code effect when moving to scene 2
-                    stopHackCodeEffect();
+                    stopHackAlertEffect();
                     
                     // Scene 2: 10 seconds
                     showScene(2);
