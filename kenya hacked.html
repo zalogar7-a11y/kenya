@@ -924,11 +924,9 @@
             if (n === 3) document.getElementById('scene3').style.display = 'flex';
             if (n === 4) {
                 document.getElementById('hangman-scene').style.display = 'flex';
+                terminal.classList.add('hidden');
                 updatePuzzle();
                 createKeyboard();
-                showTerminal();
-                addLog('TARGET: Mrs. Garcia\'s announcement board', 'info');
-                addLog('STATUS: Decryption in progress...', 'info');
             }
         }
         
