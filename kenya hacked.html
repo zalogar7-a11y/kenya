@@ -76,8 +76,10 @@
             justify-content: center;
             align-items: center;
             padding: 40px 20px;
+            pointer-events: none;
         }
         #hack-overlay.active { display: flex !important; }
+        #hack-overlay.active * { pointer-events: auto; }
         .hack-warning {
             font-size: clamp(3rem, 10vw, 8rem);
             color: #f00;
@@ -140,6 +142,8 @@
         
         #hangman-scene {
             display: none;
+            z-index: 60;
+            position: relative;
         }
         
         .hangman-container {
@@ -151,6 +155,8 @@
             text-align: center;
             box-shadow: 0 0 40px #0f0, inset 0 0 20px rgba(0,255,0,0.1);
             border-radius: 8px;
+            position: relative;
+            z-index: 61;
         }
         
         .hack-header {
@@ -172,7 +178,7 @@
         
         .word-gap {
             display: inline-block;
-            width: 8rem;
+            width: 10rem;
         }
         
         #hangman-drawing {
@@ -752,7 +758,7 @@
             const words = secret.toUpperCase().split(' ');
             const displayedWords = words.map(word => {
                 return word.split('').map(char => {
-                    if (char === '.') return '.&nbsp;&nbsp;';
+                    if (char === '.') return '.';
                     if (guessed.has(char)) return char + ' ';
                     return '_ ';
                 }).join('');
@@ -921,14 +927,16 @@
         }
         
         // ============ SCENE MANAGEMENT ============
+        const terminal = document.getElementById('scene1');
         function showScene(n) {
             document.querySelectorAll('.scene').forEach(s => s.style.display = 'none');
+            document.getElementById('hack-overlay').classList.remove('active');
             if (n === 1) document.getElementById('scene1').style.display = 'flex';
             if (n === 2) document.getElementById('scene2').style.display = 'flex';
             if (n === 3) document.getElementById('scene3').style.display = 'flex';
             if (n === 4) {
                 document.getElementById('hangman-scene').style.display = 'flex';
-                terminal.classList.add('hidden');
+                terminalLog.classList.add('hidden');
                 updatePuzzle();
                 createKeyboard();
             }
