@@ -179,14 +179,24 @@
             margin: 35px 0 25px;
             line-height: 1.4;
             min-height: 90px;
-            white-space: pre;
             letter-spacing: 4px;
             text-shadow: 0 0 8px #0f0;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        #puzzle span {
+            display: inline-block;
+            white-space: nowrap;
         }
         
         .word-gap {
             display: inline-block;
-            width: 2.8rem;
+            width: 2rem;
+            flex-shrink: 0;
         }
         
         #hangman-drawing {
@@ -773,7 +783,7 @@
                 }).join('');
             });
             
-            // Join with visible word gaps
+            // Join words with visible gaps that allow wrapping
             puzzleEl.innerHTML = displayedWords.map(w => 
                 `<span>${w.trim()}</span>`
             ).join('<span class="word-gap"></span>');
