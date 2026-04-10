@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CLASSROOM COMPROMISED</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+        
+        * {
+            box-sizing: border-box;
+        }
+        
+        body {
+            margin: 0;
+            padding: 0;
+            background: #000;
+            color: #0f0;
+            font-family: 'VT323', monospace;
+            overflow: hidden;
+            height: 100vh;
+            display: none;
+            cursor: default;
+            user-select: none;
+        }
+        
+        .scanlines {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: repeating-linear-gradient(
+                transparent 0px,
+                transparent 2px,
+                rgba(0,255,0,0.04) 2px,
+                rgba(0,255,0,0.04) 4px
+            );
+            pointer-events: none;
+            z-index: 9999;
+            animation: flicker 0.15s infinite;
+        }
+        
+        @keyframes flicker {
+            0%, 100% { opacity: 1; }
+            92% { opacity: 1; }
+            93% { opacity: 0.95; }
+            94% { opacity: 1; }
+            95% { opacity: 0.98; }
+        }
+        
+        canvas#matrix {
+            position: fixed;
+            top: 0; left: 0;
+            z-index: 1;
+            opacity: 0.18;
+        }
+        
+        .scene {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            z-index: 10;
+            padding: 20px;
+        }
+        
+        .glitch {
+            font-size: 4.8rem;
+            text-shadow: 
+                0 0 15px #0f0,
+                3px 3px 0 #f00,
+                -3px -3px 0 #00f;
+            animation: glitch 0.6s infinite;
+            margin-bottom: 20px;
+        }
+        
+        @keyframes glitch {
+            0% { transform: translate(0); }
+            20% { transform: translate(-4px, 4px); }
+            40% { transform: translate(-4px, -4px); }
+            60% { transform: translate(4px, 4px); }
+            80% { transform: translate(4px, -4px); }
+            100% { transform: translate(0); }
+        }
+        
+        .typing {
+            font-size: 2.8rem;
+            margin: 25px 0;
+            max-width: 92%;
+            line-height: 1.2;
+            min-height: 3.5rem;
+        }
+        
+        #hangman-scene {
+            display: none;
+        }
+        
+        .hangman-container {
+            background: rgba(0, 25, 0, 0.95);
+            border: 5px solid #0f0;
+            padding: 35px 40px;
+            max-width: 920px;
+            width: 92%;
+            text-align: center;
+            box-shadow: 0 0 40px #0f0, inset 0 0 20px rgba(0,255,0,0.1);
+            border-radius: 8px;
+        }
+        
+        .hack-header {
+            font-size: 2.6rem; 
+            color: #0f0; 
+            margin-bottom: 15px;
+            text-shadow: 0 0 10px #0f0;
+        }
+        
+        #puzzle {
+            font-size: 3.8rem;
+            margin: 35px 0 25px;
+            line-height: 1.4;
+            min-height: 90px;
+            white-space: pre;
+            letter-spacing: 4px;
+            text-shadow: 0 0 8px #0f0;
+        }
+        
+        .word-gap {
+            display: inline-block;
+            width: 2.8rem;
+        }
+        
+        #hangman-drawing {
+            font-size: 7rem;
+            height: 130px;
+            margin: 15px 0;
+            color: #0f0;
+            text-shadow: 0 0 20px #0f0;
+            transition: transform 0.2s;
+        }
+        
+        #hangman-drawing.shake {
+            animation: shake 0.3s;
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-8px); }
+            75% { transform: translateX(8px); }
+        }
+        
+        .keyboard {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 14px;
+            max-width: 720px;
+            margin: 30px auto 0;
+        }
+        
+        .key {
+            background: #001100;
+            border: 4px solid #0f0;
+            color: #0f0;
+            font-size: 2.1rem;
+            padding: 18px 10px;
+            cursor: pointer;
+            transition: all 0.15s;
+            box-shadow: 0 0 20px #0f0;
+            border-radius: 6px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .key::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(0,255,0,0.4) 0%, transparent 70%);
+            opacity: 0;
+            transition: opacity 0.2s;
+            pointer-events: none;
+        }
+        
+        .key:hover::after {
+            opacity: 1;
+        }
+        
+        .key:hover {
+            background: #003300;
+            transform: scale(1.08);
+            box-shadow: 0 0 35px #0f0;
+        }
+        
+        .key:active {
+            transform: scale(0.95);
+        }
+        
+        .key.used {
+            background: #330000;
+            border-color: #f66;
+            color: #f88;
+            cursor: not-allowed;
+            box-shadow: 0 0 20px #f66;
+        }
+        
+        .key.correct {
+            animation: keyCorrect 0.4s ease;
+        }
+        
+        @keyframes keyCorrect {
+            0%, 100% { box-shadow: 0 0 20px #0f0; }
+            50% { box-shadow: 0 0 50px #0f0, 0 0 80px #0f0; transform: scale(1.1); }
+        }
+        
+        .key.wrong {
+            animation: keyWrong 0.3s ease;
+        }
+        
+        @keyframes keyWrong {
+            0%, 100% { box-shadow: 0 0 20px #f66; }
+            50% { box-shadow: 0 0 40px #f66, 0 0 60px #f00; transform: scale(0.95); }
+        }
+        
+        #progress-bar {
+            height: 24px;
+            background: #001100;
+            border: 3px solid #0f0;
+            width: 85%;
+            margin: 25px auto;
+            position: relative;
+            overflow: hidden;
+            border-radius: 12px;
+            box-shadow: inset 0 0 15px rgba(0,255,0,0.3);
+        }
+        
+        #progress {
+            height: 100%;
+            background: linear-gradient(90deg, #0f0, #0a0, #ff0);
+            width: 0%;
+            transition: width 0.5s ease-out;
+            border-radius: 9px;
+            box-shadow: 0 0 20px #0f0;
+        }
+        
+        .lives {
+            font-size: 2.4rem;
+            color: #ff0;
+            text-shadow: 0 0 10px #ff0;
+            margin: 10px 0;
+        }
+        
+        #win-scene {
+            display: none;
+            background: radial-gradient(ellipse at center, #002200 0%, #000 70%);
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            animation: winGlow 2s ease-in-out infinite;
+        }
+        
+        @keyframes winGlow {
+            0%, 100% { box-shadow: inset 0 0 100px rgba(0,255,0,0.2); }
+            50% { box-shadow: inset 0 0 150px rgba(0,255,0,0.4); }
+        }
+        
+        .win-title {
+            font-size: 5.2rem;
+            color: #0f0;
+            text-shadow: 0 0 40px #0f0, 0 0 80px #0f0;
+            margin: 20px 0;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.03); }
+        }
+        
+        .baby-alert {
+            font-size: 4.5rem;
+            color: #ff0;
+            animation: flash 0.7s infinite, bounce 1s ease infinite;
+            text-shadow: 0 0 30px #ff0;
+        }
+        
+        @keyframes flash {
+            50% { opacity: 0.5; }
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .celebration-text {
+            font-size: 3rem; 
+            color: #0ff; 
+            margin: 25px 0;
+            text-shadow: 0 0 20px #0ff;
+        }
+        
+        .subtext {
+            font-size: 2.6rem; 
+            color: #0f0;
+            margin: 15px 0;
+        }
+        
+        .click-hint {
+            margin-top: 50px; 
+            font-size: 2.2rem; 
+            color: #ff0;
+            animation: blink 1.5s infinite;
+            text-shadow: 0 0 15px #ff0;
+        }
+        
+        @keyframes blink {
+            0%, 50%, 100% { opacity: 1; }
+            25%, 75% { opacity: 0.5; }
+        }
+        
+        /* Terminal log panel */
+        .terminal-log {
+            position: fixed;
+            right: 20px;
+            top: 20px;
+            width: 280px;
+            max-height: 300px;
+            background: rgba(0, 15, 0, 0.9);
+            border: 2px solid #0f0;
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 1.3rem;
+            overflow-y: auto;
+            z-index: 100;
+            box-shadow: 0 0 25px rgba(0,255,0,0.3);
+            display: none;
+        }
+        
+        .terminal-log.active {
+            display: block;
+        }
+        
+        .log-entry {
+            margin: 4px 0;
+            opacity: 0.9;
+        }
+        
+        .log-entry.new {
+            color: #0ff;
+            animation: slideIn 0.3s ease;
+        }
+        
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(20px); }
+            to { opacity: 0.9; transform: translateX(0); }
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .glitch { font-size: 3.5rem; }
+            .typing { font-size: 2.2rem; }
+            #puzzle { font-size: 2.8rem; }
+            .keyboard { grid-template-columns: repeat(6, 1fr); gap: 10px; }
+            .key { font-size: 1.7rem; padding: 14px 6px; }
+            .terminal-log { width: 200px; font-size: 1.1rem; right: 10px; top: 10px; }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="matrix"></canvas>
+    <div class="scanlines"></div>
+    
+    <!-- Terminal Log Panel -->
+    <div class="terminal-log" id="terminal-log">
+        <div style="color:#0ff;margin-bottom:8px;border-bottom:1px solid #0f0;padding-bottom:5px;">
+            &gt; SYSTEM LOG
+        </div>
+        <div id="log-entries"></div>
+    </div>
+
+    <!-- Scene 1: Hacked Intro -->
+    <div id="scene1" class="scene">
+        <div class="glitch">YOU'VE BEEN HACKED</div>
+        <div class="typing" id="type1"></div>
+    </div>
+
+    <!-- Scene 2: Teacher's Secret -->
+    <div id="scene2" class="scene" style="display:none;">
+        <div class="glitch" style="font-size:4.2rem;">YOUR TEACHER IS KEEPING A SECRET</div>
+    </div>
+
+    <!-- Scene 3: Can you figure it out -->
+    <div id="scene3" class="scene" style="display:none;">
+        <div class="typing" id="type3" style="font-size:2.6rem;">CAN YOU FIGURE IT OUT BEFORE I FINISH HACKING HER BOARD?</div>
+    </div>
+
+    <!-- Hangman Scene -->
+    <div id="hangman-scene" class="scene">
+        <div class="hangman-container">
+            <div class="hack-header">🔓 HACKING TEACHER'S SECRET...</div>
+            
+            <div id="hangman-drawing"> </div>
+            
+            <div id="puzzle"></div>
+            
+            <div id="progress-bar">
+                <div id="progress"></div>
+            </div>
+            
+            <div class="lives">⚠️ WRONG GUESSES: <span id="lives">8</span></div>
+            
+            <div class="keyboard" id="keyboard"></div>
+        </div>
+    </div>
+
+    <!-- Win Scene -->
+    <div id="win-scene" class="scene">
+        <div class="baby-alert">🚨 ALERT: BABY DETECTED! 🚨</div>
+        <div class="win-title">MRS. GARCIA IS HAVING A BABY!!!</div>
+        <div class="celebration-text">🎉 CONGRATULATIONS CLASS! 🎉</div>
+        <div class="subtext">A new little hacker is joining us soon! 👶💻</div>
+        
+        <div class="click-hint">✨ Click anywhere to restart the hack ✨</div>
+    </div>
+
+    <script>
+        // ============ AUDIO SYSTEM ============
+        function createAudio(src, vol = 0.6) {
+            const audio = new Audio(src);
+            audio.volume = vol;
+            audio.preload = 'auto';
+            return audio;
+        }
+        
+        // Kid-friendly, fun sound effects from FreeSound (CC0/Attribution)
+        const sounds = {
+            correct: createAudio('https://freesound.org/data/previews/276/276951_5123854-lq.mp3', 0.7),    // soft positive ding
+            wrong: createAudio('https://freesound.org/data/previews/341/341695_5123854-lq.mp3', 0.6),      // playful buzz
+            win: createAudio('https://freesound.org/data/previews/387/387186_5123854-lq.mp3', 0.8),        // victory fanfare
+            robot: createAudio('https://freesound.org/data/previews/276/276952_5123854-lq.mp3', 0.7),      // robot voice
+            sceneChange: createAudio('https://freesound.org/data/previews/382/382343_6895989-lq.mp3', 0.4), // subtle whoosh
+            gameStart: createAudio('https://freesound.org/data/previews/207/207194_3894642-lq.mp3', 0.5),  // keyboard burst
+            keyHover: createAudio('https://freesound.org/data/previews/348/348343_6895989-lq.mp3', 0.25),  // soft tick
+            progress: createAudio('https://freesound.org/data/previews/113/113592_1914963-lq.mp3', 0.2),   // low blip
+            decode: createAudio('https://freesound.org/data/previews/270/270308_4883074-lq.mp3', 0.5),     // sci-fi decode
+            confetti: createAudio('https://freesound.org/data/previews/311/311743_5858348-lq.mp3', 0.6)    // celebratory pop
+        };
+        
+        // Unlock audio on first interaction (browser policy)
+        let audioUnlocked = false;
+        function unlockAudio() {
+            if (audioUnlocked) return;
+            audioUnlocked = true;
+            Object.values(sounds).forEach(sound => {
+                sound.play().then(() => sound.pause()).catch(() => {});
+            });
+        }
+        document.body.addEventListener('click', unlockAudio, { once: true });
+        document.body.addEventListener('keydown', unlockAudio, { once: true });
+        
+        // Safe play wrapper
+        function playSound(soundKey, overrideVol = null) {
+            if (!audioUnlocked) return;
+            const sound = sounds[soundKey];
+            if (!sound) return;
+            try {
+                if (overrideVol !== null) sound.volume = overrideVol;
+                sound.currentTime = 0;
+                sound.play().catch(() => {}); // Silent fail if blocked
+            } catch(e) {}
+        }
+        
+        // ============ MATRIX RAIN ============
+        const canvas = document.getElementById('matrix');
+        const ctx = canvas.getContext('2d');
+        
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+        
+        const chars = "01ABCDEFアイウエオハックBABYSECRET0123456789?!@#$%";
+        const fontSize = 16;
+        let columns, drops;
+        
+        function initMatrix() {
+            columns = Math.floor(canvas.width / fontSize);
+            drops = Array(Math.floor(columns)).fill(1);
+        }
+        initMatrix();
+        window.addEventListener('resize', initMatrix);
+        
+        function drawMatrix() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.06)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#0f0';
+            ctx.font = `${fontSize}px monospace`;
+            
+            for (let i = 0; i < drops.length; i++) {
+                const text = chars[Math.floor(Math.random() * chars.length)];
+                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+                
+                if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+                    drops[i] = 0;
+                }
+                drops[i]++;
+            }
+            requestAnimationFrame(drawMatrix);
+        }
+        drawMatrix();
+        
+        // ============ TYPING EFFECT ============
+        function typeText(el, text, speed, callback) {
+            let i = 0;
+            el.textContent = '';
+            const int = setInterval(() => {
+                if (i < text.length) {
+                    el.textContent += text[i];
+                    // Subtle typing sound every few chars
+                    if (i % 3 === 0 && audioUnlocked) {
+                        playSound('keyHover', 0.15);
+                    }
+                    i++;
+                } else {
+                    clearInterval(int);
+                    if (callback) setTimeout(callback, 300);
+                }
+            }, speed);
+        }
+        
+        // ============ TERMINAL LOG ============
+        const logEntries = document.getElementById('log-entries');
+        const terminalLog = document.getElementById('terminal-log');
+        
+        function addLog(message, type = 'info') {
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            const timestamp = new Date().toLocaleTimeString('en-US', {hour12:false, hour:'2-digit',minute:'2-digit',second:'2-digit'});
+            entry.textContent = `[${timestamp}] ${message}`;
+            logEntries.appendChild(entry);
+            logEntries.scrollTop = logEntries.scrollHeight;
+            
+            // Auto-remove old entries
+            while (logEntries.children.length > 12) {
+                logEntries.removeChild(logEntries.firstChild);
+            }
+        }
+        
+        function showTerminal() {
+            terminalLog.classList.add('active');
+            addLog('SYSTEM: Connection established...', 'info');
+        }
+        
+        // ============ HANGMAN GAME ============
+        const secret = "MRS. GARCIA IS HAVING A BABY";
+        let guessed = new Set();
+        let wrong = 0;
+        const maxWrong = 8;
+        
+        const puzzleEl = document.getElementById('puzzle');
+        const livesEl = document.getElementById('lives');
+        const progressEl = document.getElementById('progress');
+        const hangmanDrawing = document.getElementById('hangman-drawing');
+        
+        // Fun emoji progression for "hacking damage"
+        const stages = ["🟢","🟡","🟠","🔴","⚠️","💥","☠️","👾","🎉"];
+        
+        function updatePuzzle() {
+            const words = secret.toUpperCase().split(' ');
+            const displayedWords = words.map(word => {
+                return word.split('').map(char => {
+                    if (char === '.') return '. ';
+                    if (guessed.has(char)) return char + ' ';
+                    return '_ ';
+                }).join('');
+            });
+            
+            // Join with visible word gaps
+            puzzleEl.innerHTML = displayedWords.map(w => 
+                `<span>${w.trim()}</span>`
+            ).join('<span class="word-gap"></span>');
+            
+            // Check win condition
+            const allGuessed = [...secret].every(c => 
+                c === ' ' || c === '.' || guessed.has(c.toUpperCase())
+            );
+            
+            if (allGuessed && document.getElementById('hangman-scene').style.display !== 'none') {
+                playSound('decode');
+                setTimeout(winGame, 500);
+            }
+        }
+        
+        function updateProgress() {
+            const perc = Math.floor((wrong / maxWrong) * 100);
+            progressEl.style.width = perc + '%';
+            
+            if (wrong > 0 && wrong <= maxWrong) {
+                playSound('progress');
+                addLog(`WARNING: Hack integrity at ${100-perc}%`, 'warn');
+            }
+        }
+        
+        function createKeyboard() {
+            const kb = document.getElementById('keyboard');
+            kb.innerHTML = '';
+            'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').forEach(letter => {
+                const key = document.createElement('div');
+                key.className = 'key';
+                key.textContent = letter;
+                key.dataset.letter = letter;
+                
+                // Hover sound
+                key.addEventListener('mouseenter', () => {
+                    if (!key.classList.contains('used') && audioUnlocked) {
+                        playSound('keyHover');
+                    }
+                });
+                
+                // Click handler
+                key.addEventListener('click', () => {
+                    if (!key.classList.contains('used')) {
+                        handleGuess(letter, key);
+                    }
+                });
+                
+                kb.appendChild(key);
+            });
+        }
+        
+        function handleGuess(letter, keyEl) {
+            guessed.add(letter);
+            keyEl.classList.add('used');
+            
+            if (secret.toUpperCase().includes(letter)) {
+                // CORRECT GUESS
+                keyEl.classList.add('correct');
+                playSound('correct');
+                addLog(`✓ Decrypted: ${letter}`, 'success');
+                updatePuzzle();
+            } else {
+                // WRONG GUESS
+                wrong++;
+                keyEl.classList.add('wrong');
+                playSound('wrong');
+                livesEl.textContent = maxWrong - wrong;
+                hangmanDrawing.textContent = stages[wrong];
+                hangmanDrawing.classList.add('shake');
+                setTimeout(() => hangmanDrawing.classList.remove('shake'), 300);
+                updateProgress();
+                addLog(`✗ Failed attempt: ${letter}`, 'error');
+                
+                if (wrong >= maxWrong) {
+                    setTimeout(() => {
+                        alert("⚠️ HACK ABORTED! ⚠️\n\nThe secret was:\n" + secret + "\n\nTry again, hacker!");
+                        resetToStart();
+                    }, 400);
+                }
+            }
+        }
+        
+        function winGame() {
+            document.getElementById('hangman-scene').style.display = 'none';
+            const winScene = document.getElementById('win-scene');
+            winScene.style.display = 'flex';
+            
+            playSound('win');
+            setTimeout(() => playSound('robot'), 600);
+            setTimeout(() => playSound('confetti'), 1200);
+            
+            addLog('🎉 SUCCESS: Secret fully decrypted!', 'success');
+            addLog('👶 BABY DETECTED IN SYSTEM!', 'success');
+            
+            createConfetti();
+        }
+        
+        function createConfetti() {
+            const emojis = ['🍼','👶','🎉','❤️','💚','✨','🌟','🎊'];
+            for (let i = 0; i < 80; i++) {
+                setTimeout(() => {
+                    const c = document.createElement('div');
+                    c.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+                    c.style.cssText = `
+                        position: fixed;
+                        left: ${Math.random()*100}vw;
+                        top: -40px;
+                        font-size: ${2 + Math.random()*2}rem;
+                        z-index: 99999;
+                        pointer-events: none;
+                        animation: fall ${3 + Math.random()*2}s linear forwards;
+                        text-shadow: 0 0 10px currentColor;
+                    `;
+                    document.body.appendChild(c);
+                    setTimeout(() => c.remove(), 5000);
+                }, i * 25);
+            }
+            
+            // Add fall animation dynamically
+            if (!document.getElementById('confetti-style')) {
+                const style = document.createElement('style');
+                style.id = 'confetti-style';
+                style.textContent = `
+                    @keyframes fall {
+                        to {
+                            transform: translateY(${window.innerHeight + 100}px) rotate(${Math.random()*720}deg);
+                            opacity: 0;
+                        }
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+        }
+        
+        function resetToStart() {
+            // Reset game state
+            guessed = new Set();
+            wrong = 0;
+            livesEl.textContent = maxWrong;
+            progressEl.style.width = '0%';
+            hangmanDrawing.textContent = stages[0];
+            document.getElementById('log-entries').innerHTML = '';
+            terminalLog.classList.remove('active');
+            
+            // Reset keyboard
+            document.querySelectorAll('.key').forEach(k => {
+                k.classList.remove('used', 'correct', 'wrong');
+            });
+            
+            // Hide win scene, show start
+            document.getElementById('win-scene').style.display = 'none';
+            startSequence();
+        }
+        
+        // ============ SCENE MANAGEMENT ============
+        function showScene(n) {
+            document.querySelectorAll('.scene').forEach(s => s.style.display = 'none');
+            if (n === 1) document.getElementById('scene1').style.display = 'flex';
+            if (n === 2) document.getElementById('scene2').style.display = 'flex';
+            if (n === 3) document.getElementById('scene3').style.display = 'flex';
+            if (n === 4) {
+                document.getElementById('hangman-scene').style.display = 'flex';
+                updatePuzzle();
+                createKeyboard();
+                showTerminal();
+                addLog('TARGET: Mrs. Garcia\'s announcement board', 'info');
+                addLog('STATUS: Decryption in progress...', 'info');
+            }
+        }
+        
+        // ============ MAIN SEQUENCE ============
+        function startSequence() {
+            document.body.style.display = 'block';
+            addLog('SYSTEM: Initializing hack sequence...', 'info');
+            
+            // Scene 1: Show for FULL 8 seconds
+            showScene(1);
+            typeText(document.getElementById('type1'), "YOUR TEACHER IS KEEPING A SECRET", 65, () => {
+                // Calculate remaining time to hit exactly 8 seconds total
+                // Typing ~28 chars @ 65ms = ~1820ms, so wait ~6180ms more
+                setTimeout(() => {
+                    playSound('sceneChange');
+                    addLog('ACCESSING: Faculty confidential files...', 'info');
+                    
+                    // Scene 2: 10 seconds
+                    showScene(2);
+                    setTimeout(() => {
+                        playSound('sceneChange');
+                        addLog('ANALYZING: Hidden patterns detected...', 'info');
+                        
+                        // Scene 3: 10 seconds  
+                        showScene(3);
+                        typeText(document.getElementById('type3'), "CAN YOU FIGURE IT OUT BEFORE I FINISH HACKING HER BOARD?", 45, () => {
+                            setTimeout(() => {
+                                playSound('gameStart');
+                                addLog('🎮 GAME MODE: ACTIVE', 'success');
+                                addLog('INSTRUCTIONS: Guess letters to decrypt the secret!', 'info');
+                                
+                                // Go to Hangman
+                                showScene(4);
+                            }, 800); // Brief pause after typing completes
+                        });
+                    }, 10000);
+                }, 6200); // 8000ms total scene 1 - ~1800ms typing = 6200ms
+            });
+        }
+        
+        // ============ EVENT LISTENERS ============
+        // Win screen click to restart
+        document.getElementById('win-scene').addEventListener('click', (e) => {
+            if (e.target.id === 'win-scene' || e.target.classList.contains('click-hint')) {
+                playSound('sceneChange', 0.5);
+                resetToStart();
+            }
+        });
+        
+        // Keyboard support for hangman
+        document.addEventListener('keydown', e => {
+            const hangmanVisible = document.getElementById('hangman-scene').style.display === 'flex';
+            if (!hangmanVisible) return;
+            
+            const letter = e.key.toUpperCase();
+            if (letter.match(/[A-Z]/)) {
+                const key = document.querySelector(`.key[data-letter="${letter}"]`);
+                if (key && !key.classList.contains('used')) {
+                    handleGuess(letter, key);
+                }
+            }
+            
+            // Escape to restart anytime
+            if (e.key === 'Escape') {
+                resetToStart();
+            }
+        });
+        
+        // Prevent context menu on right-click (immersion)
+        document.addEventListener('contextmenu', e => e.preventDefault());
+        
+        // ============ START ============
+        window.addEventListener('load', () => {
+            // Small delay to ensure assets load
+            setTimeout(startSequence, 500);
+        });
+    </script>
+</body>
+</html>
