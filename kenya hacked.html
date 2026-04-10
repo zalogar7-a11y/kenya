@@ -64,6 +64,52 @@
             z-index: 10;
             padding: 20px;
         }
+
+        /* HACK OVERLAY FOR SCENE 1 */
+        #hack-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 50;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 40px 20px;
+        }
+        #hack-overlay.active { display: flex !important; }
+        .hack-warning {
+            font-size: clamp(3rem, 10vw, 8rem);
+            color: #f00;
+            text-shadow: 0 0 30px #f00, 0 0 60px #f00;
+            animation: flash-red 0.3s infinite;
+            margin-bottom: 20px;
+            font-weight: bold;
+            text-align: center;
+            line-height: 1.1;
+        }
+        .hack-subwarning {
+            font-size: clamp(2rem, 7vw, 5rem);
+            color: #ff0;
+            text-shadow: 0 0 20px #ff0;
+            animation: flash-yellow 0.5s infinite;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        .hack-lines {
+            font-size: clamp(1.3rem, 4vw, 2.5rem);
+            color: #f00;
+            text-align: center;
+            line-height: 1.5;
+            max-width: 95%;
+        }
+        .hack-line {
+            margin: 10px 0;
+            animation: blink-text 0.2s infinite alternate;
+        }
+        @keyframes flash-red { 0%, 100% { opacity: 1; } 50% { opacity: 0.2; } }
+        @keyframes flash-yellow { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+        @keyframes blink-text { from { opacity: 0.5; } to { opacity: 1; } }
         
         .glitch {
             font-size: 4.8rem;
@@ -94,6 +140,14 @@
         
         #hangman-scene {
             display: none;
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            z-index: 10;
+            padding: 20px;
         }
         
         .hangman-container {
@@ -112,6 +166,12 @@
             color: #0f0; 
             margin-bottom: 15px;
             text-shadow: 0 0 10px #0f0;
+            line-height: 1.3;
+            max-width: 80%;
+            margin-left: auto;
+            margin-right: auto;
+            display: block;
+            word-wrap: break-word;
         }
         
         #puzzle {
@@ -252,6 +312,8 @@
         }
         
         #win-scene {
+            overflow-y: auto;
+            min-height: 100vh;
             display: none;
             background: radial-gradient(ellipse at center, #002200 0%, #000 70%);
             flex-direction: column;
@@ -260,17 +322,40 @@
             animation: winGlow 2s ease-in-out infinite;
         }
         
+        /* Win content - centered, no side panels */
+        #win-scene .win-content-wrapper {
+            min-height: 100vh;
+            width: 100%;
+            max-width: 1000px;
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+        }
+        
         @keyframes winGlow {
             0%, 100% { box-shadow: inset 0 0 100px rgba(0,255,0,0.2); }
             50% { box-shadow: inset 0 0 150px rgba(0,255,0,0.4); }
         }
         
         .win-title {
-            font-size: 5.2rem;
+            font-size: clamp(2.5rem, 6vw, 5.2rem);
             color: #0f0;
             text-shadow: 0 0 40px #0f0, 0 0 80px #0f0;
-            margin: 20px 0;
+            margin: 30px 0;
             animation: pulse 1.5s ease-in-out infinite;
+            line-height: 1.4;
+            word-wrap: break-word;
+            max-width: 95%;
+            white-space: normal;
+        }
+        
+        .win-title br {
+            display: block;
+            content: "";
+            margin: 15px 0;
         }
         
         @keyframes pulse {
@@ -279,10 +364,14 @@
         }
         
         .baby-alert {
-            font-size: 4.5rem;
+            font-size: clamp(2rem, 5vw, 4.5rem);
             color: #ff0;
             animation: flash 0.7s infinite, bounce 1s ease infinite;
             text-shadow: 0 0 30px #ff0;
+            text-align: center;
+            max-width: 95%;
+            line-height: 1.3;
+            margin-bottom: 20px;
         }
         
         @keyframes flash {
@@ -295,24 +384,30 @@
         }
         
         .celebration-text {
-            font-size: 3rem; 
+            font-size: clamp(1.5rem, 4vw, 3rem); 
             color: #0ff; 
-            margin: 25px 0;
+            margin: 35px 0;
             text-shadow: 0 0 20px #0ff;
+            text-align: center;
+            line-height: 1.4;
         }
         
         .subtext {
-            font-size: 2.6rem; 
+            font-size: clamp(1.2rem, 3.5vw, 2.6rem); 
             color: #0f0;
-            margin: 15px 0;
+            margin: 25px 0;
+            text-align: center;
+            max-width: 90%;
+            line-height: 1.5;
         }
         
         .click-hint {
-            margin-top: 50px; 
-            font-size: 2.2rem; 
+            margin-top: 60px; 
+            font-size: clamp(1.2rem, 3vw, 2.2rem); 
             color: #ff0;
             animation: blink 1.5s infinite;
             text-shadow: 0 0 15px #ff0;
+            text-align: center;
         }
         
         @keyframes blink {
@@ -320,14 +415,21 @@
             25%, 75% { opacity: 0.5; }
         }
         
-        /* Terminal log panel */
+        /* Hide terminal log during win scene */
+        #win-scene.active ~ .terminal-log,
+        .terminal-log.hidden,
+        body.win-active .terminal-log {
+            display: none !important;
+        }
+        
+        /* Terminal log panel - LEFT side only during game */
         .terminal-log {
             position: fixed;
-            right: 20px;
+            left: 20px;
             top: 20px;
-            width: 280px;
-            max-height: 300px;
-            background: rgba(0, 15, 0, 0.9);
+            width: 320px;
+            max-height: 40vh;
+            background: rgba(0, 15, 0, 0.95);
             border: 2px solid #0f0;
             border-radius: 8px;
             padding: 12px;
@@ -340,6 +442,36 @@
         
         .terminal-log.active {
             display: block;
+        }
+        
+        .terminal-log.hidden {
+            display: none;
+        }
+        
+        /* HACK CODE OVERLAY - Shows random code during intro */
+        .hack-code-overlay {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 50;
+            display: none;
+            padding: 40px;
+            overflow: hidden;
+        }
+        
+        .hack-code-overlay.active {
+            display: block;
+        }
+        
+        .code-line {
+            font-family: 'VT323', monospace;
+            font-size: clamp(0.9rem, 2vw, 1.4rem);
+            color: #0f0;
+            white-space: pre;
+            line-height: 1.4;
+            text-shadow: 0 0 8px #0f0;
+            opacity: 0.9;
         }
         
         .log-entry {
@@ -364,7 +496,9 @@
             #puzzle { font-size: 2.8rem; }
             .keyboard { grid-template-columns: repeat(6, 1fr); gap: 10px; }
             .key { font-size: 1.7rem; padding: 14px 6px; }
-            .terminal-log { width: 200px; font-size: 1.1rem; right: 10px; top: 10px; }
+            .terminal-log { left: 10px; top: 10px; width: 45%; max-height: 35vh; font-size: 1.1rem; }
+            .hack-code-overlay { padding: 20px; }
+            .code-line { font-size: 1rem; }
         }
     </style>
 </head>
@@ -372,6 +506,12 @@
     <canvas id="matrix"></canvas>
     <div class="scanlines"></div>
     
+    <!-- HACK OVERLAY FOR SCENE 1 - Emergency Alert Style -->
+    <div id="hack-overlay">
+        <div class="hack-warning">⚠️ EMERGENCY ⚠️</div>
+        <div class="hack-subwarning">YOU ARE BEING HACKED!</div>
+        <div class="hack-lines" id="hack-lines"></div>
+    </div>
     <!-- Terminal Log Panel -->
     <div class="terminal-log" id="terminal-log">
         <div style="color:#0ff;margin-bottom:8px;border-bottom:1px solid #0f0;padding-bottom:5px;">
@@ -399,7 +539,7 @@
     <!-- Hangman Scene -->
     <div id="hangman-scene" class="scene">
         <div class="hangman-container">
-            <div class="hack-header">🔓 HACKING TEACHER'S SECRET...</div>
+            <div class="hack-header">🔓 HACKING TEACHER'S<br>SECRET...</div>
             
             <div id="hangman-drawing"> </div>
             
@@ -417,12 +557,14 @@
 
     <!-- Win Scene -->
     <div id="win-scene" class="scene">
-        <div class="baby-alert">🚨 ALERT: BABY DETECTED! 🚨</div>
-        <div class="win-title">MRS. GARCIA IS HAVING A BABY!!!</div>
-        <div class="celebration-text">🎉 CONGRATULATIONS CLASS! 🎉</div>
-        <div class="subtext">A new little hacker is joining us soon! 👶💻</div>
-        
-        <div class="click-hint">✨ Click anywhere to restart the hack ✨</div>
+        <div class="win-content-wrapper">
+            <div class="baby-alert">🚨 ALERT: BABY DETECTED! 🚨</div>
+            <div class="win-title">MRS. GARCIA<br>IS HAVING A BABY!!!</div>
+            <div class="celebration-text">🎉 CONGRATULATIONS CLASS! 🎉</div>
+            <div class="subtext">A new little hacker is joining us soon! 👶💻</div>
+            
+            <div class="click-hint">✨ Click anywhere to restart the hack ✨</div>
+        </div>
     </div>
 
     <script>
@@ -530,6 +672,58 @@
                     if (callback) setTimeout(callback, 300);
                 }
             }, speed);
+        }
+        
+        // ============ HACK ALERT EFFECT FOR SCENE 1 ============
+        const hackLinesEl = document.getElementById('hack-lines');
+        const hackMessages = [
+            "⚠️ EMERGENCY YOU ARE BEING HACKED! ⚠️",
+            "🔓 UNAUTHORIZED ACCESS DETECTED 🔓",
+            "💀 SYSTEM COMPROMISED - NO ESCAPE 💀",
+            "🚨 CRITICAL SECURITY BREACH 🚨",
+            "⚡ ALL DATA EXPOSED ⚡",
+            "🔥 FIREWALL DESTROYED 🔥",
+            "⚠️ WARNING: HACK IN PROGRESS ⚠️",
+            "👾 MALICIOUS CODE EXECUTING 👾",
+            "💣 YOUR SYSTEM IS NOW MINE 💣",
+            "🚫 EMERGENCY - YOU ARE BEING HACKED! 🚫",
+            "⚠️ EMERGENCY YOU ARE BEING HACKED! ⚠️",
+            "🔓 THERE IS NO TURNING BACK 🔓"
+        ];
+
+        let hackInterval;
+        function startHackAlertEffect() {
+            document.getElementById('hack-overlay').classList.add('active');
+            hackLinesEl.innerHTML = '';
+            
+            // Create initial lines with more spacing
+            for (let i = 0; i < 5; i++) {
+                const line = document.createElement('div');
+                line.className = 'hack-line';
+                line.style.fontSize = 'clamp(1.5rem, 5vw, 3rem)';
+                line.style.margin = '25px 0';
+                line.style.fontWeight = 'bold';
+                line.textContent = hackMessages[Math.floor(Math.random() * hackMessages.length)];
+                hackLinesEl.appendChild(line);
+            }
+
+            // Update random lines continuously with dramatic effect
+            hackInterval = setInterval(() => {
+                const lines = hackLinesEl.querySelectorAll('.hack-line');
+                const idx = Math.floor(Math.random() * lines.length);
+                lines[idx].textContent = hackMessages[Math.floor(Math.random() * hackMessages.length)];
+                lines[idx].style.color = '#ff0';
+                lines[idx].style.textShadow = '0 0 30px #ff0, 0 0 60px #f00';
+                setTimeout(() => { 
+                    lines[idx].style.color = '#f00'; 
+                    lines[idx].style.textShadow = '0 0 20px #f00';
+                }, 180);
+            }, 250);
+        }
+
+        function stopHackAlertEffect() {
+            document.getElementById('hack-overlay').classList.remove('active');
+            if (hackInterval) clearInterval(hackInterval);
         }
         
         // ============ TERMINAL LOG ============
@@ -667,13 +861,17 @@
             document.getElementById('hangman-scene').style.display = 'none';
             const winScene = document.getElementById('win-scene');
             winScene.style.display = 'flex';
+            winScene.classList.add('active');
+            document.body.classList.add('win-active');
+            
+            // Hide terminal log on win
+            terminalLog.classList.remove('active');
+            terminalLog.classList.add('hidden');
+            terminalLog.style.display = 'none';
             
             playSound('win');
             setTimeout(() => playSound('robot'), 600);
             setTimeout(() => playSound('confetti'), 1200);
-            
-            addLog('🎉 SUCCESS: Secret fully decrypted!', 'success');
-            addLog('👶 BABY DETECTED IN SYSTEM!', 'success');
             
             createConfetti();
         }
@@ -723,7 +921,7 @@
             progressEl.style.width = '0%';
             hangmanDrawing.textContent = stages[0];
             document.getElementById('log-entries').innerHTML = '';
-            terminalLog.classList.remove('active');
+            terminalLog.classList.remove('active', 'hidden');
             
             // Reset keyboard
             document.querySelectorAll('.key').forEach(k => {
@@ -732,28 +930,32 @@
             
             // Hide win scene, show start
             document.getElementById('win-scene').style.display = 'none';
+            startHackAlertEffect();
             startSequence();
         }
         
         // ============ SCENE MANAGEMENT ============
         function showScene(n) {
             document.querySelectorAll('.scene').forEach(s => s.style.display = 'none');
+            document.getElementById('hangman-scene').style.display = 'none';
             if (n === 1) document.getElementById('scene1').style.display = 'flex';
             if (n === 2) document.getElementById('scene2').style.display = 'flex';
             if (n === 3) document.getElementById('scene3').style.display = 'flex';
             if (n === 4) {
                 document.getElementById('hangman-scene').style.display = 'flex';
+                terminalLog.classList.add('hidden');
                 updatePuzzle();
                 createKeyboard();
-                showTerminal();
-                addLog('TARGET: Mrs. Garcia\'s announcement board', 'info');
-                addLog('STATUS: Decryption in progress...', 'info');
             }
         }
         
         // ============ MAIN SEQUENCE ============
         function startSequence() {
             document.body.style.display = 'block';
+            
+            // Start the hack code effect for realistic hacking look
+            startHackAlertEffect();
+            
             addLog('SYSTEM: Initializing hack sequence...', 'info');
             
             // Scene 1: Show for FULL 8 seconds
@@ -764,6 +966,9 @@
                 setTimeout(() => {
                     playSound('sceneChange');
                     addLog('ACCESSING: Faculty confidential files...', 'info');
+                    
+                    // Stop hack code effect when moving to scene 2
+                    stopHackAlertEffect();
                     
                     // Scene 2: 10 seconds
                     showScene(2);
