@@ -311,15 +311,13 @@
         /* Win content - centered, no side panels */
         #win-scene .win-content-wrapper {
             min-height: 100vh;
-            
-            padding-top: 40px;
+            width: 100%;
+            max-width: 1000px;
+            padding: 40px 20px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            
-            width: 100%;
-            max-width: 900px;
-            padding: 20px;
+            justify-content: center;
             z-index: 100;
         }
         
@@ -332,11 +330,18 @@
             font-size: clamp(2.5rem, 6vw, 5.2rem);
             color: #0f0;
             text-shadow: 0 0 40px #0f0, 0 0 80px #0f0;
-            margin: 20px 0;
+            margin: 30px 0;
             animation: pulse 1.5s ease-in-out infinite;
-            line-height: 1.2;
+            line-height: 1.4;
             word-wrap: break-word;
             max-width: 95%;
+            white-space: normal;
+        }
+        
+        .win-title br {
+            display: block;
+            content: "";
+            margin: 15px 0;
         }
         
         @keyframes pulse {
@@ -351,6 +356,8 @@
             text-shadow: 0 0 30px #ff0;
             text-align: center;
             max-width: 95%;
+            line-height: 1.3;
+            margin-bottom: 20px;
         }
         
         @keyframes flash {
@@ -365,25 +372,28 @@
         .celebration-text {
             font-size: clamp(1.5rem, 4vw, 3rem); 
             color: #0ff; 
-            margin: 25px 0;
+            margin: 35px 0;
             text-shadow: 0 0 20px #0ff;
             text-align: center;
+            line-height: 1.4;
         }
         
         .subtext {
             font-size: clamp(1.2rem, 3.5vw, 2.6rem); 
             color: #0f0;
-            margin: 15px 0;
+            margin: 25px 0;
             text-align: center;
             max-width: 90%;
+            line-height: 1.5;
         }
         
         .click-hint {
-            margin-top: 50px; 
+            margin-top: 60px; 
             font-size: clamp(1.2rem, 3vw, 2.2rem); 
             color: #ff0;
             animation: blink 1.5s infinite;
             text-shadow: 0 0 15px #ff0;
+            text-align: center;
         }
         
         @keyframes blink {
@@ -392,8 +402,9 @@
         }
         
         /* Hide terminal log during win scene */
-        #win-scene ~ .terminal-log,
-        .terminal-log.hidden {
+        #win-scene.active ~ .terminal-log,
+        .terminal-log.hidden,
+        body.win-active .terminal-log {
             display: none !important;
         }
         
@@ -530,7 +541,7 @@
     <div id="win-scene" class="scene">
         <div class="win-content-wrapper">
             <div class="baby-alert">🚨 ALERT: BABY DETECTED! 🚨</div>
-            <div class="win-title">MRS. GARCIA IS HAVING A BABY!!!</div>
+            <div class="win-title">MRS. GARCIA<br>IS HAVING A BABY!!!</div>
             <div class="celebration-text">🎉 CONGRATULATIONS CLASS! 🎉</div>
             <div class="subtext">A new little hacker is joining us soon! 👶💻</div>
             
@@ -648,16 +659,18 @@
         // ============ HACK ALERT EFFECT FOR SCENE 1 ============
         const hackLinesEl = document.getElementById('hack-lines');
         const hackMessages = [
-            "⚠️ SYSTEM BREACH DETECTED ⚠️",
-            "🔓 FIREWALL DISABLED 🔓",
-            "💀 UNAUTHORIZED ACCESS IN PROGRESS 💀",
-            "🚨 SECURITY PROTOCOLS OVERRIDDEN 🚨",
-            "⚡ ENCRYPTION BYPASSED ⚡",
-            "🔥 DATA EXTRACTION ACTIVE 🔥",
-            "⚠️ CRITICAL VULNERABILITY EXPLOITED ⚠️",
-            "👾 BACKDOOR INSTALLED 👾",
-            "💣 SYSTEM COMPROMISED 💣",
-            "🚫 NO ESCAPE - YOU ARE BEING HACKED 🚫"
+            "⚠️ EMERGENCY YOU ARE BEING HACKED! ⚠️",
+            "🔓 UNAUTHORIZED ACCESS DETECTED 🔓",
+            "💀 SYSTEM COMPROMISED - NO ESCAPE 💀",
+            "🚨 CRITICAL SECURITY BREACH 🚨",
+            "⚡ ALL DATA EXPOSED ⚡",
+            "🔥 FIREWALL DESTROYED 🔥",
+            "⚠️ WARNING: HACK IN PROGRESS ⚠️",
+            "👾 MALICIOUS CODE EXECUTING 👾",
+            "💣 YOUR SYSTEM IS NOW MINE 💣",
+            "🚫 EMERGENCY - YOU ARE BEING HACKED! 🚫",
+            "⚠️ EMERGENCY YOU ARE BEING HACKED! ⚠️",
+            "🔓 THERE IS NO TURNING BACK 🔓"
         ];
 
         let hackInterval;
@@ -665,22 +678,29 @@
             document.getElementById('hack-overlay').classList.add('active');
             hackLinesEl.innerHTML = '';
             
-            // Create initial lines
-            for (let i = 0; i < 6; i++) {
+            // Create initial lines with more spacing
+            for (let i = 0; i < 5; i++) {
                 const line = document.createElement('div');
                 line.className = 'hack-line';
+                line.style.fontSize = 'clamp(1.5rem, 5vw, 3rem)';
+                line.style.margin = '25px 0';
+                line.style.fontWeight = 'bold';
                 line.textContent = hackMessages[Math.floor(Math.random() * hackMessages.length)];
                 hackLinesEl.appendChild(line);
             }
 
-            // Update random lines continuously
+            // Update random lines continuously with dramatic effect
             hackInterval = setInterval(() => {
                 const lines = hackLinesEl.querySelectorAll('.hack-line');
                 const idx = Math.floor(Math.random() * lines.length);
                 lines[idx].textContent = hackMessages[Math.floor(Math.random() * hackMessages.length)];
-                lines[idx].style.color = Math.random() > 0.7 ? '#ff0' : '#f00';
-                setTimeout(() => { lines[idx].style.color = '#f00'; }, 150);
-            }, 200);
+                lines[idx].style.color = '#ff0';
+                lines[idx].style.textShadow = '0 0 30px #ff0, 0 0 60px #f00';
+                setTimeout(() => { 
+                    lines[idx].style.color = '#f00'; 
+                    lines[idx].style.textShadow = '0 0 20px #f00';
+                }, 180);
+            }, 250);
         }
 
         function stopHackAlertEffect() {
@@ -823,10 +843,13 @@
             document.getElementById('hangman-scene').style.display = 'none';
             const winScene = document.getElementById('win-scene');
             winScene.style.display = 'flex';
+            winScene.classList.add('active');
+            document.body.classList.add('win-active');
             
             // Hide terminal log on win
             terminalLog.classList.remove('active');
             terminalLog.classList.add('hidden');
+            terminalLog.style.display = 'none';
             
             playSound('win');
             setTimeout(() => playSound('robot'), 600);
